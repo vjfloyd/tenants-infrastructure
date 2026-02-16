@@ -1,0 +1,25 @@
+# Logs
+logs/
+*.log
+
+# Docker
+docker-compose.override.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (just in case)
+*.pem
+*.key
+*.crt
+secrets/
+QUICKSTART.md
+DEPLOYMENT_CHECKLIST.md
