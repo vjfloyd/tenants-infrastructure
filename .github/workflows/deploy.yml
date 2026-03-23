@@ -7,8 +7,25 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to Hetzner
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Nginx image
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ghcr.io/$REPO_LOWER/tenants-nginx:latest .
+          docker push ghcr.io/$REPO_LOWER/tenants-nginx:latest
+
       - name: Copy docker-compose to server
         uses: appleboy/scp-action@master
         with:
@@ -30,7 +47,6 @@ jobs:
             
             # Define paths
             INFRA_DIR="/opt/tenants-infrastructure"
-            API_DIR="/opt/tenants-service"
             
             # Create infrastructure directory if it doesn't exist
             mkdir -p $INFRA_DIR
@@ -64,6 +80,14 @@ jobs:
             
             # Deploy Nginx
             echo "🔧 Deploying Nginx..."
+            
+            # Log in to GHCR on the server
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Convert repository name to lowercase for Docker image name
+            REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+            sed -i "s|\${GITHUB_REPOSITORY}|$REPO_LOWER|g" docker-compose.yaml
+            
             docker compose pull nginx
             docker compose up -d nginx
             
