@@ -77,10 +77,15 @@ jobs:
               docker network create tenants-network
             fi
             
-            # Connect existing API container to the network if it exists
+            # Connect existing API and Frontend containers to the network if they exist
             if docker ps -a | grep -q tenants-api; then
               echo "🔗 Connecting API container to network..."
               docker network connect tenants-network tenants-api 2>/dev/null || true
+            fi
+            
+            if docker ps -a | grep -q tenants-frontend; then
+              echo "🔗 Connecting Frontend container to network..."
+              docker network connect tenants-network tenants-frontend 2>/dev/null || true
             fi
             
             # Deploy Nginx
