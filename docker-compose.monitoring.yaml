@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: management-portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    networks:
+      - tenants-network
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: management-dozzle
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "8888:8080"
+    networks:
+      - tenants-network
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  portainer_data:
+
+networks:
+  tenants-network:
+    name: tenants-network
+    external: true
